@@ -1,0 +1,72 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "enabledManagers": ["dockerfile", "github-actions", "custom.regex"],
+  "semanticCommits": "disabled",
+  "labels": ["dependencies"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "libwebsockets in the Dockerfile",
+      "managerFilePatterns": ["/^mosquitto/Dockerfile$/"],
+      "matchStrings": ["ARG LIBWEBSOCKET_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "warmcat/libwebsockets",
+      "datasourceTemplate": "github-tags",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Mosquitto in the Dockerfile",
+      "managerFilePatterns": ["/^mosquitto/Dockerfile$/"],
+      "matchStrings": ["ARG MOSQUITTO_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "eclipse/mosquitto",
+      "datasourceTemplate": "github-tags",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "mosquitto-go-auth in the Dockerfile",
+      "managerFilePatterns": ["/^mosquitto/Dockerfile$/"],
+      "matchStrings": ["ARG MOSQUITTO_AUTH_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "iegomez/mosquitto-go-auth",
+      "datasourceTemplate": "github-releases"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/home-assistant/base-debian"],
+      "versionCompatibility": "^trixie-(?<version>\\d+\\.\\d+\\.\\d+)$",
+      "versioning": "pep440",
+      "sourceUrl": "https://github.com/home-assistant/docker-base",
+      "groupName": "docker-base",
+      "commitMessageTopic": "home-assistant/base-debian image",
+      "commitMessageExtra": "to {{newValue}}"
+    },
+    {
+      "description": "Dockerfile ARGs pin image components, so title their PRs \"Update <name> to <version>\"",
+      "matchManagers": ["custom.regex"],
+      "commitMessageTopic": "{{depName}}"
+    },
+    {
+      "description": "GitHub Actions: weekly with a 7 day cooldown, like Dependabot did",
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github_actions"],
+      "schedule": ["before 8am on monday"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Leave runner labels and action version inputs alone, Dependabot never updated those",
+      "matchManagers": ["github-actions"],
+      "matchDepTypes": ["github-runner", "uses-with"],
+      "enabled": false
+    },
+    {
+      "description": "Our own actions that follow a branch (like home-assistant/actions@master) float on purpose. Pinning them would open a digest PR in every repository for each change to them. Our own actions on a version tag are pinned like any other.",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["home-assistant/**"],
+      "matchCurrentValue": "/^(dev|main|master)$/",
+      "pinDigests": false
+    }
+  ]
+}
