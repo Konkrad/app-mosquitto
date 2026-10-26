@@ -1,0 +1,16 @@
+---
+# yamllint disable rule:comments rule:line-length rule:truthy
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release-drafter:
+    uses: home-assistant/workflows/.github/workflows/app-release-drafter.yaml@43290e4d60baf0ff53555e1766aa0d4ec5cb3a89 # v0.1.1

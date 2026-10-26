@@ -1,0 +1,34 @@
+---
+# yamllint disable rule:comments rule:line-length rule:truthy
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    permissions:
+      contents: read
+      security-events: write
+    uses: home-assistant/workflows/.github/workflows/app-ci.yaml@43290e4d60baf0ff53555e1766aa0d4ec5cb3a89 # v0.1.1
+
+  deploy:
+    needs: ci
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    uses: home-assistant/workflows/.github/workflows/app-deploy.yaml@43290e4d60baf0ff53555e1766aa0d4ec5cb3a89 # v0.1.1
+    with:
+      repository: apps
+      repository_edge: "apps-dev"
+    secrets:
+      DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}

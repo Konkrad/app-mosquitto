@@ -1,11 +1,11 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/home-assistant/base-debian:trixie
 FROM $BUILD_FROM
 
 # Install mosquitto + auth plugin
 WORKDIR /usr/src
-ARG LIBWEBSOCKET_VERSION
-ARG MOSQUITTO_VERSION
-ARG MOSQUITTO_AUTH_VERSION
+ARG LIBWEBSOCKET_VERSION=4.5.8
+ARG MOSQUITTO_VERSION=2.1.2
+ARG MOSQUITTO_AUTH_VERSION=3.0.0
 COPY patches/0001-Fix-builtin-websockets-dropping-the-session-on-an-empty-data-frame.patch /usr/src
 RUN apt-get update \
     && apt-get install -qy --no-install-recommends \
@@ -99,3 +99,9 @@ RUN apt-get update \
 COPY rootfs /
 
 WORKDIR /
+
+LABEL \
+    org.opencontainers.image.title="Home Assistant App: Mosquitto broker" \
+    org.opencontainers.image.description="An Open Source MQTT broker" \
+    org.opencontainers.image.source="https://github.com/home-assistant/app-mosquitto" \
+    org.opencontainers.image.licenses="Apache License 2.0"
