@@ -98,6 +98,9 @@ RUN apt-get update \
 # Copy rootfs
 COPY rootfs /
 
+HEALTHCHECK --start-period=30s --start-interval=5s --interval=30s \
+    CMD bash -c '</dev/tcp/127.0.0.1/1883' || exit 1
+
 WORKDIR /
 
 LABEL \
