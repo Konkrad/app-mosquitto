@@ -7,15 +7,6 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "libwebsockets in the Dockerfile",
-      "managerFilePatterns": ["/^mosquitto/Dockerfile$/"],
-      "matchStrings": ["ARG LIBWEBSOCKET_VERSION=(?<currentValue>\\S+)"],
-      "depNameTemplate": "warmcat/libwebsockets",
-      "datasourceTemplate": "github-tags",
-      "extractVersionTemplate": "^v(?<version>.+)$"
-    },
-    {
-      "customType": "regex",
       "description": "Mosquitto in the Dockerfile",
       "managerFilePatterns": ["/^mosquitto/Dockerfile$/"],
       "matchStrings": ["ARG MOSQUITTO_VERSION=(?<currentValue>\\S+)"],

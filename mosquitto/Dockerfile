@@ -4,7 +4,6 @@ FROM $BUILD_FROM
 
 # Install mosquitto + auth plugin
 WORKDIR /usr/src
-ARG LIBWEBSOCKET_VERSION=4.5.8
 ARG MOSQUITTO_VERSION=2.1.2
 ARG MOSQUITTO_AUTH_VERSION=3.0.0
 COPY patches/0001-Fix-builtin-websockets-dropping-the-session-on-an-empty-data-frame.patch /usr/src
@@ -13,7 +12,6 @@ RUN apt-get update \
         nginx \
         pwgen \
         build-essential \
-        cmake \
         git \
         openssl \
         patch \
@@ -27,20 +25,6 @@ RUN apt-get update \
         docbook-xsl \
         golang-go \
     \
-    # Compile and install libwebsocket
-    #
-    # DLWS_WITHOUT_TESTAPPS is just a workaround, see
-    # https://github.com/warmcat/libwebsockets/issues/2790 for more
-    && git clone --depth 1 -b "v${LIBWEBSOCKET_VERSION}" \
-       https://github.com/warmcat/libwebsockets \
-    \
-    && cd libwebsockets \
-    && mkdir build \
-    && cd build \
-    && cmake -DLWS_WITH_EXTERNAL_POLL=ON -DLWS_WITHOUT_TESTAPPS=ON .. \
-    && make install \
-    && ldconfig \
-    && cd ../.. \
     # Compile and install mosquitto
     && git clone --depth 1 -b "v${MOSQUITTO_VERSION}" \
        https://github.com/eclipse/mosquitto \
@@ -72,7 +56,6 @@ RUN apt-get update \
         build-essential \
         git \
         patch \
-        cmake \
         libssl-dev \
         libc-ares-dev \
         libcjson-dev \
@@ -86,7 +69,6 @@ RUN apt-get update \
         /etc/mosquitto/* \
         /etc/nginx/* \
         /usr/share/nginx \
-        /usr/src/libwebsockets \
         /usr/src/mosquitto \
         /usr/src/mosquitto-go-auth \
         /usr/src/*.patch \
