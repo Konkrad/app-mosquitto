@@ -1,0 +1,45 @@
+---
+# yamllint disable rule:comments rule:line-length rule:truthy
+name: Plugin tests
+
+on:
+  pull_request:
+    paths:
+      - mosquitto/plugin/**
+      - mosquitto/Dockerfile
+      - .github/workflows/plugin-tests.yaml
+  push:
+    branches:
+      - main
+    paths:
+      - mosquitto/plugin/**
+      - mosquitto/Dockerfile
+      - .github/workflows/plugin-tests.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test the auth plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential libssl-dev libcurl4-openssl-dev libcjson-dev
+
+      - name: Get the Mosquitto headers
+        run: |
+          version="$(sed -n 's/^ARG MOSQUITTO_VERSION=//p' mosquitto/Dockerfile)"
+          git clone --depth 1 -b "v${version}" https://github.com/eclipse/mosquitto "${RUNNER_TEMP}/mosquitto"
+
+      - name: Run the tests
+        run: make -C mosquitto/plugin test CPPFLAGS="-I${RUNNER_TEMP}/mosquitto/include"

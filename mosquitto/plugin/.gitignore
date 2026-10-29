@@ -1,0 +1,4 @@
+ha-auth.so
+pw
+tests/test_pbkdf2
+tests/test_ha_auth
