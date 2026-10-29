@@ -13,14 +13,6 @@
       "depNameTemplate": "eclipse/mosquitto",
       "datasourceTemplate": "github-tags",
       "extractVersionTemplate": "^v(?<version>.+)$"
-    },
-    {
-      "customType": "regex",
-      "description": "mosquitto-go-auth in the Dockerfile",
-      "managerFilePatterns": ["/^mosquitto/Dockerfile$/"],
-      "matchStrings": ["ARG MOSQUITTO_AUTH_VERSION=(?<currentValue>\\S+)"],
-      "depNameTemplate": "iegomez/mosquitto-go-auth",
-      "datasourceTemplate": "github-releases"
     }
   ],
   "packageRules": [

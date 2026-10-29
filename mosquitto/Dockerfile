@@ -5,11 +5,10 @@ FROM $BUILD_FROM
 # Install mosquitto + auth plugin
 WORKDIR /usr/src
 ARG MOSQUITTO_VERSION=2.1.2
-ARG MOSQUITTO_AUTH_VERSION=3.0.0
 COPY patches/0001-Fix-builtin-websockets-dropping-the-session-on-an-empty-data-frame.patch /usr/src
+COPY plugin /usr/src/ha-auth
 RUN apt-get update \
     && apt-get install -qy --no-install-recommends \
-        nginx \
         pwgen \
         build-essential \
         git \
@@ -20,10 +19,11 @@ RUN apt-get update \
         libc-ares-dev \
         libcjson1 \
         libcjson-dev \
+        libcurl4t64 \
+        libcurl4-openssl-dev \
         libsqlite3-dev \
         xsltproc \
         docbook-xsl \
-        golang-go \
     \
     # Compile and install mosquitto
     && git clone --depth 1 -b "v${MOSQUITTO_VERSION}" \
@@ -38,19 +38,8 @@ RUN apt-get update \
     && make WITH_WEBSOCKETS=yes WITH_SRV=yes \
     && make install \
     && cd .. \
-    # Compile and install mosquitto-go-auth
-    && git clone --depth 1 -b "${MOSQUITTO_AUTH_VERSION}" \
-       https://github.com/iegomez/mosquitto-go-auth \
-    \
-    && cd mosquitto-go-auth \
-    && sed -i 's/-I\/usr\/local\/include/-I\/usr\/include/' Makefile \
-    && sed -i 's/LDFLAGS := .*$/& -Wl,-unresolved-symbols=ignore-all/' Makefile \
-    # Fix nil pointer dereference panic in ttlcache
-    && sed -i 's/return present, item.Value()/if item == nil { return false, false }\n\treturn true, item.Value()/' cache/cache.go \
-    && make \
-    && mkdir -p /usr/share/mosquitto \
-    && cp -f go-auth.so /usr/share/mosquitto \
-    && cp -f pw /usr/local/bin \
+    # Compile and install the authentication plugin
+    && make -C ha-auth install \
     \
     && apt-get purge -y --auto-remove \
         build-essential \
@@ -59,24 +48,19 @@ RUN apt-get update \
         libssl-dev \
         libc-ares-dev \
         libcjson-dev \
+        libcurl4-openssl-dev \
         libsqlite3-dev \
         xsltproc \
         docbook-xsl \
-        golang-go \
     && apt-get clean \
     && rm -fr \
         /etc/logrotate.d \
         /etc/mosquitto/* \
-        /etc/nginx/* \
-        /usr/share/nginx \
         /usr/src/mosquitto \
-        /usr/src/mosquitto-go-auth \
+        /usr/src/ha-auth \
         /usr/src/*.patch \
-        /var/lib/nginx/html \
-        /var/www \
         /var/lib/apt/lists/* \
-	/root/.cache \
-	/root/go
+	/root/.cache
 
 # Copy rootfs
 COPY rootfs /
